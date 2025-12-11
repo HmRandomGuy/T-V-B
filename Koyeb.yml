@@ -1,0 +1,15 @@
+app:
+  name: txt-voice-bot
+  region: global
+  services:
+    - name: bot-worker
+      type: worker
+      build:
+        dockerfile: Dockerfile
+      env:
+        - name: BOT_TOKEN
+          # set in Koyeb dashboard or CLI as a secret; do NOT commit the token to git!
+          value: ""
+      resources:
+        cpu: 1
+        memory: 512
