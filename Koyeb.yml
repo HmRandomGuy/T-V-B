@@ -1,29 +1,30 @@
-# koyeb.yml - Koyeb app manifest for Txt-Voice-Bot (Web Service / Free Tier)
+# koyeb.yml - Web Service manifest (supports scale-to-zero)
 app:
   name: txt-voice-bot
   region: global
 
 services:
   - name: bot-web
-    # Use a web service (required on Free Tier)
     type: web
-    # Build from Dockerfile in repo root
     build:
       dockerfile: Dockerfile
       context: .
-    # Expose ports & routes so Koyeb treats this as a web app
+    # Expose port used by your container
     ports:
       - name: http
         port: 8080
-        # route: forward all traffic to the service; leave default or specify a path if needed
-    # Environment variables — reference the BOT_TOKEN secret (create it in Koyeb Secrets first)
+
+    # ROUTES: at least one HTTP route is required for services to be eligible to scale-to-zero.
+    # If you omit "domain", Koyeb will create a default *.koyeb.app domain for the app+service.
+    routes:
+      - path: "/"
+        # Optional: specify a custom domain here if you have one:
+        # domain: "bots.example.com"
+
     env:
       - name: BOT_TOKEN
-        # Interpolate the secret -- create a secret named BOT_TOKEN in Koyeb and it will be substituted here.
-        # If your Koyeb account/CLI uses a different secret reference style, create the secret and
-        # reference it from the UI/service settings instead.
         value: "{{ secret.BOT_TOKEN }}"
-    # Optional health check (Koyeb can use this to mark containers healthy/unhealthy)
+
     health_check:
       type: http
       path: "/"
@@ -32,10 +33,12 @@ services:
       timeout_seconds: 5
       healthy_threshold: 2
       unhealthy_threshold: 3
+
     resources:
       cpu: 1
       memory: 512
-    # Scaling: keep a single instance for a bot
+
+    # Allow scaling down to zero when idle
     scaling:
-      min: 1
+      min: 0
       max: 1
